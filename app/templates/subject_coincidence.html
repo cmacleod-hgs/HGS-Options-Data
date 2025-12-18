@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+
+{% block title %}Subject Combinations - {{ upload.filename }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4" style="max-width: 98%;">
+    <div class="row">
+        <div class="col-12">
+            <h2>Subject Combination Analysis</h2>
+            <p class="text-muted">
+                File: <strong>{{ upload.original_filename }}</strong> | 
+                Year Group: <strong>{{ upload.year_group }}</strong> | 
+                Students: <strong>{{ total_students }}</strong>
+            </p>
+            <p class="text-info">
+                <i class="bi bi-info-circle"></i> This table shows how many students take each combination of subjects. 
+                The diagonal shows total students per subject. Zeros indicate subject combinations that no students chose.
+            </p>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Subject Coincidence Matrix 
+                        <span class="badge bg-primary">{{ all_subjects|length }} Subjects</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-sm coincidence-table" id="coincidenceTable">
+                            <thead>
+                                <tr>
+                                    <th class="sticky-col first-col">Subject</th>
+                                    {% for subject in all_subjects %}
+                                    <th class="text-center rotating-header">
+                                        <div class="rotate-text">{{ subject }}</div>
+                                    </th>
+                                    {% endfor %}
+                                    <th class="text-center bg-light">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for subject1 in all_subjects %}
+                                <tr>
+                                    <th class="sticky-col first-col">{{ subject1 }}</th>
+                                    {% for subject2 in all_subjects %}
+                                    <td class="text-center {% if subject1 == subject2 %}diagonal-cell{% elif coincidence_matrix[subject1][subject2] == 0 %}zero-cell{% else %}value-cell{% endif %}" 
+                                        data-value="{{ coincidence_matrix[subject1][subject2] }}"
+                                        title="{{ subject1 }} + {{ subject2 }}: {{ coincidence_matrix[subject1][subject2] }} students">
+                                        {% if subject1 == subject2 %}
+                                            <strong>{{ subject_totals[subject1] }}</strong>
+                                        {% else %}
+                                            {{ coincidence_matrix[subject1][subject2] }}
+                                        {% endif %}
+                                    </td>
+                                    {% endfor %}
+                                    <td class="text-center bg-light"><strong>{{ subject_totals[subject1] }}</strong></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h6>Legend:</h6>
+                            <div class="d-flex gap-3 flex-wrap">
+                                <span><span class="legend-box diagonal-cell"></span> Diagonal = Total students taking this subject</span>
+                                <span><span class="legend-box value-cell"></span> Numbers = Students taking both subjects</span>
+                                <span><span class="legend-box zero-cell"></span> Red = No students take this combination</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Key Insights</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Most Popular Combinations:</h6>
+                            <ul class="list-group list-group-flush">
+                                {% set combinations = [] %}
+                                {% for subject1 in all_subjects %}
+                                    {% for subject2 in all_subjects %}
+                                        {% if subject1 < subject2 and coincidence_matrix[subject1][subject2] > 0 %}
+                                            {% set _ = combinations.append((subject1, subject2, coincidence_matrix[subject1][subject2])) %}
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endfor %}
+                                {% for combo in combinations|sort(attribute='2', reverse=True)|slice(10) %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    {{ combo[0] }} + {{ combo[1] }}
+                                    <span class="badge bg-success">{{ combo[2] }} students</span>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Zero Combinations (Not Chosen Together):</h6>
+                            <div style="max-height: 400px; overflow-y: auto;">
+                                <ul class="list-group list-group-flush">
+                                    {% set zero_count = 0 %}
+                                    {% for subject1 in all_subjects %}
+                                        {% for subject2 in all_subjects %}
+                                            {% if subject1 < subject2 and coincidence_matrix[subject1][subject2] == 0 %}
+                                                <li class="list-group-item text-danger">
+                                                    {{ subject1 }} + {{ subject2 }}
+                                                </li>
+                                                {% set zero_count = zero_count + 1 %}
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% endfor %}
+                                    {% if zero_count == 0 %}
+                                    <li class="list-group-item text-muted">All subject combinations have at least one student!</li>
+                                    {% endif %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-3 mb-4">
+        <div class="col-12">
+            <a href="{{ url_for('analysis.year_summary', year_group=upload.year_group) }}" class="btn btn-secondary">Back to Year Summary</a>
+            <a href="{{ url_for('analysis.view_data', upload_id=upload.id) }}" class="btn btn-primary">View Student Data</a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .coincidence-table {
+        font-size: 0.75rem;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+    
+    .coincidence-table th,
+    .coincidence-table td {
+        min-width: 35px;
+        max-width: 35px;
+        width: 35px;
+        padding: 4px 2px;
+        border: 1px solid #dee2e6;
+    }
+    
+    .sticky-col {
+        position: sticky;
+        left: 0;
+        background-color: #f8f9fa;
+        z-index: 20;
+    }
+    
+    .first-col {
+        min-width: 150px !important;
+        max-width: 200px !important;
+        width: 150px !important;
+        font-weight: 600;
+        text-align: left;
+        padding-left: 8px;
+    }
+    
+    .rotating-header {
+        height: 120px;
+        white-space: nowrap;
+        vertical-align: bottom;
+        padding: 0;
+        border: 1px solid #dee2e6;
+    }
+    
+    .rotate-text {
+        transform: rotate(-60deg);
+        transform-origin: left bottom;
+        width: 25px;
+        margin-left: 5px;
+        margin-bottom: 5px;
+        font-size: 0.7rem;
+        white-space: nowrap;
+    }
+    
+    .diagonal-cell {
+        background-color: #d1ecf1 !important;
+        font-weight: bold;
+    }
+    
+    .zero-cell {
+        background-color: #f8d7da !important;
+        color: #721c24;
+    }
+    
+    .value-cell {
+        background-color: #d4edda;
+    }
+    
+    .coincidence-table tbody tr:hover {
+        background-color: #fffacd;
+    }
+    
+    .coincidence-table td:hover {
+        background-color: #ffeb3b !important;
+        cursor: pointer;
+        font-weight: bold;
+    }
+    
+    .legend-box {
+        display: inline-block;
+        width: 20px;
+        height: 15px;
+        border: 1px solid #ccc;
+        margin-right: 5px;
+        vertical-align: middle;
+    }
+    
+    .table-responsive {
+        overflow-x: auto;
+        overflow-y: auto;
+        max-height: 800px;
+    }
+    
+    .coincidence-table thead th {
+        position: sticky;
+        top: 0;
+        background-color: #f8f9fa;
+        z-index: 10;
+    }
+    
+    .coincidence-table thead th.first-col {
+        z-index: 30;
+    }
+</style>
+{% endblock %}

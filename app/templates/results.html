@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card">
+    <h2>Analysis Results: {{ upload.original_filename }}</h2>
+    
+    <div style="background-color: #f8f9fa; padding: 1rem; border-radius: 4px; margin: 1rem 0;">
+        <p><strong>Year Group:</strong> {{ upload.year_group }}</p>
+        <p><strong>Upload Date:</strong> {{ upload.upload_date.strftime('%Y-%m-%d %H:%M') }}</p>
+        <p><strong>Total Records:</strong> {{ upload.record_count }}</p>
+    </div>
+    
+    <h3 style="margin-top: 2rem; margin-bottom: 1rem;">Subject Choice Breakdown</h3>
+    
+    {% if subject_choices %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Rank</th>
+                    <th>Subject</th>
+                    <th>Number of Choices</th>
+                    <th>Percentage</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for choice in subject_choices %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td><strong>{{ choice.subject_name }}</strong></td>
+                    <td>{{ choice.choice_count }}</td>
+                    <td>{{ "%.1f"|format((choice.choice_count / upload.record_count * 100)) }}%</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        <div style="margin-top: 2rem;">
+            <h3>Summary Statistics</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
+                <div style="background-color: #e3f2fd; padding: 1rem; border-radius: 4px;">
+                    <p style="font-size: 0.9rem; color: #555;">Most Popular</p>
+                    <p style="font-size: 1.3rem; font-weight: 600; color: #1976d2;">{{ subject_choices[0].subject_name }}</p>
+                    <p style="font-size: 0.9rem; color: #555;">{{ subject_choices[0].choice_count }} choices</p>
+                </div>
+                <div style="background-color: #f3e5f5; padding: 1rem; border-radius: 4px;">
+                    <p style="font-size: 0.9rem; color: #555;">Total Subjects</p>
+                    <p style="font-size: 1.3rem; font-weight: 600; color: #7b1fa2;">{{ subject_choices|length }}</p>
+                </div>
+                <div style="background-color: #e8f5e9; padding: 1rem; border-radius: 4px;">
+                    <p style="font-size: 0.9rem; color: #555;">Average per Subject</p>
+                    <p style="font-size: 1.3rem; font-weight: 600; color: #388e3c;">{{ "%.1f"|format(upload.record_count / subject_choices|length) }}</p>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <p style="color: #888;">No subject choice data found.</p>
+    {% endif %}
+    
+    <div style="margin-top: 2rem;">
+        <a href="{{ url_for('main.dashboard') }}" class="btn">Back to Dashboard</a>
+        <a href="{{ url_for('analysis.view_data', upload_id=upload.id) }}" class="btn btn-secondary">View Student Data</a>
+        <a href="{{ url_for('analysis.compare') }}" class="btn btn-secondary">Compare with Other Years</a>
+    </div>
+</div>
+{% endblock %}

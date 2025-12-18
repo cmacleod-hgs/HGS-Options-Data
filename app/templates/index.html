@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card" style="text-align: center; margin-top: 3rem;">
+    <h2>Welcome to the Scottish School Subject Analysis System</h2>
+    <p style="margin: 1.5rem 0; font-size: 1.1rem; color: #555;">
+        Analyze student subject choices across S3, S4, and S5-6 year groups
+    </p>
+    
+    <div style="margin-top: 2rem;">
+        <a href="{{ url_for('auth.login') }}" class="btn" style="font-size: 1.2rem; padding: 1rem 2rem;">
+            Login to Get Started
+        </a>
+    </div>
+    
+    <div style="margin-top: 3rem; text-align: left;">
+        <h3 style="margin-bottom: 1rem;">Features:</h3>
+        <ul style="list-style-position: inside; color: #555;">
+            <li>Secure OAuth authentication</li>
+            <li>Upload and process subject choice data (CSV/Excel)</li>
+            <li>Analyze data by year group (S3, S4, S5-6)</li>
+            <li>View subject popularity statistics</li>
+            <li>Compare trends across year groups</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

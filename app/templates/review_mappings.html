@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}Review Subject Names - {{ upload.filename }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h2>Review Subject Names</h2>
+            <p class="text-muted">File: <strong>{{ upload.original_filename }}</strong> | Year Group: <strong>{{ upload.year_group }}</strong></p>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-12">
+            <div class="alert alert-info">
+                <h5><i class="bi bi-info-circle"></i> Review and Set Friendly Names</h5>
+                <p class="mb-0">We found some subject names that don't have friendly mappings yet. You can accept the original names or provide friendly alternatives. These mappings will be saved for future uploads of {{ upload.year_group }} data.</p>
+            </div>
+        </div>
+    </div>
+
+    <form method="POST">
+        {% if unmapped_subjects %}
+        <div class="row mt-3">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0">New Subject Names ({{ unmapped_subjects|length }})</h5>
+                    </div>
+                    <div class="card-body">
+                        <p>These subjects don't have friendly names yet. You can keep the original name or provide a better one:</p>
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 40%;">Original Name</th>
+                                        <th style="width: 60%;">Friendly Name (edit if needed)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for subject in unmapped_subjects %}
+                                    <tr>
+                                        <td>
+                                            <code class="bg-light p-1">{{ subject }}</code>
+                                        </td>
+                                        <td>
+                                            <input type="text" 
+                                                   class="form-control" 
+                                                   name="friendly_{{ subject }}" 
+                                                   value="{{ subject }}"
+                                                   placeholder="Enter friendly name">
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="form-check mt-3">
+                            <input class="form-check-input" type="checkbox" name="save_mappings" value="yes" id="saveMappings" checked>
+                            <label class="form-check-label" for="saveMappings">
+                                <strong>Save these mappings permanently</strong> for future {{ upload.year_group }} uploads
+                            </label>
+                            <small class="form-text text-muted d-block">
+                                Mappings will be written to <code>app/utils/subject_mappings.py</code>
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if mapped_subjects %}
+        <div class="row mt-3">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">Already Mapped ({{ mapped_subjects|length }})</h5>
+                    </div>
+                    <div class="card-body">
+                        <p>These subjects already have friendly names from previous mappings:</p>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Original</th>
+                                        <th>→</th>
+                                        <th>Friendly Name</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for mapping in mapped_subjects %}
+                                    <tr>
+                                        <td><code class="bg-light p-1">{{ mapping.original }}</code></td>
+                                        <td>→</td>
+                                        <td><strong>{{ mapping.friendly }}</strong></td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="row mt-4">
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <i class="bi bi-check-circle"></i> Continue with Import
+                </button>
+                <a href="{{ url_for('main.dashboard') }}" class="btn btn-secondary btn-lg">
+                    <i class="bi bi-x-circle"></i> Cancel
+                </a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<style>
+.table code {
+    font-size: 0.9rem;
+}
+.form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+}
+</style>
+{% endblock %}

@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block title %}Subject Mappings{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h2>Subject Name Mappings</h2>
+            <p class="text-muted">Manage how unfriendly subject codes are displayed as friendly names. <strong>Stored in database - changes persist automatically!</strong></p>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Add New Mapping</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('analysis.add_subject_mapping') }}">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <label for="year_group" class="form-label">Year Group</label>
+                                <select name="year_group" id="year_group" class="form-select" required>
+                                    <option value="">Select...</option>
+                                    <option value="S3">S3</option>
+                                    <option value="S4">S4</option>
+                                    <option value="S5-6">S5-6</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="unfriendly_name" class="form-label">Unfriendly Name</label>
+                                <input type="text" name="unfriendly_name" id="unfriendly_name" class="form-control" required 
+                                       placeholder="e.g., GEOZ GeogZ CfE">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="friendly_name" class="form-label">Friendly Name</label>
+                                <input type="text" name="friendly_name" id="friendly_name" class="form-control" required 
+                                       placeholder="e.g., Geography">
+                            </div>
+                            <div class="col-md-1">
+                                <label class="form-label">&nbsp;</label>
+                                <button type="submit" class="btn btn-primary w-100">Add</button>
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-12">
+                                <small class="text-muted">
+                                    <i class="bi bi-info-circle"></i> These mappings are saved to the database and will persist across sessions.
+                                </small>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <ul class="nav nav-tabs" id="yearTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="s3-tab" data-bs-toggle="tab" data-bs-target="#s3" type="button">
+                        S3 <span class="badge bg-primary">{{ mappings_by_year['S3']|length }}</span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="s4-tab" data-bs-toggle="tab" data-bs-target="#s4" type="button">
+                        S4 <span class="badge bg-primary">{{ mappings_by_year['S4']|length }}</span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="s5-6-tab" data-bs-toggle="tab" data-bs-target="#s5-6" type="button">
+                        S5-6 <span class="badge bg-primary">{{ mappings_by_year['S5-6']|length }}</span>
+                    </button>
+                </li>
+            </ul>
+            
+            <div class="tab-content" id="yearTabsContent">
+                {% for year_group, mappings in mappings_by_year.items() %}
+                <div class="tab-pane fade {% if year_group == 'S3' %}show active{% endif %}" 
+                     id="{{ year_group.lower() }}" role="tabpanel">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">{{ year_group }} Mappings ({{ mappings|length }})</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if mappings %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 45%;">Unfriendly Name</th>
+                                            <th style="width: 45%;">Friendly Name</th>
+                                            <th style="width: 10%;">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for mapping in mappings|sort(attribute='friendly_name') %}
+                                        <tr>
+                                            <td><code>{{ mapping.unfriendly_name }}</code></td>
+                                            <td><strong>{{ mapping.friendly_name }}</strong></td>
+                                            <td>
+                                                <form method="POST" action="{{ url_for('analysis.delete_subject_mapping', mapping_id=mapping.id) }}" 
+                                                      style="display:inline;" onsubmit="return confirm('Delete this mapping?');">
+                                                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <p class="text-muted">No mappings defined for {{ year_group }} yet.</p>
+                            {% endif %}
+                        </div>
+                        {% if mappings %}
+                        <div class="card-footer text-muted">
+                            <small>Total mappings: {{ mappings|length }}</small>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-3 mb-4">
+        <div class="col-12">
+            <a href="{{ url_for('main.dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+        </div>
+    </div>
+</div>
+
+<style>
+    code {
+        background-color: #f8f9fa;
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-size: 0.9em;
+    }
+</style>
+{% endblock %}

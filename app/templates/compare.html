@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card">
+    <h2>Compare Subject Choices Across Year Groups</h2>
+    
+    {% if subjects %}
+        <p style="margin-bottom: 1.5rem; color: #555;">
+            Compare subject popularity across S3, S4, and S5-6 year groups
+        </p>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Subject</th>
+                    <th>S3</th>
+                    <th>S4</th>
+                    <th>S5-6</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for subject, counts in subjects.items()|sort %}
+                <tr>
+                    <td><strong>{{ subject }}</strong></td>
+                    <td>{{ counts.S3 }}</td>
+                    <td>{{ counts.S4 }}</td>
+                    <td>{{ counts['S5-6'] }}</td>
+                    <td><strong>{{ counts.S3 + counts.S4 + counts['S5-6'] }}</strong></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot style="background-color: #f8f9fa; font-weight: 600;">
+                <tr>
+                    <td>TOTAL</td>
+                    <td>{{ subjects.values()|map(attribute='S3')|sum }}</td>
+                    <td>{{ subjects.values()|map(attribute='S4')|sum }}</td>
+                    <td>{{ subjects.values()|map(attribute='S5-6')|sum }}</td>
+                    <td>{{ (subjects.values()|map(attribute='S3')|sum) + (subjects.values()|map(attribute='S4')|sum) + (subjects.values()|map(attribute='S5-6')|sum) }}</td>
+                </tr>
+            </tfoot>
+        </table>
+        
+        <div style="margin-top: 2rem;">
+            <h3>Key Insights</h3>
+            <div style="background-color: #f8f9fa; padding: 1rem; border-radius: 4px; margin-top: 1rem;">
+                <ul style="margin-left: 1.5rem; color: #555;">
+                    <li>Total unique subjects: {{ subjects|length }}</li>
+                    <li>Total choices across all years: {{ (subjects.values()|map(attribute='S3')|sum) + (subjects.values()|map(attribute='S4')|sum) + (subjects.values()|map(attribute='S5-6')|sum) }}</li>
+                </ul>
+            </div>
+        </div>
+    {% else %}
+        <p style="color: #888;">No data available for comparison. Upload data for different year groups to see comparisons.</p>
+    {% endif %}
+    
+    <div style="margin-top: 2rem;">
+        <a href="{{ url_for('main.dashboard') }}" class="btn">Back to Dashboard</a>
+        <a href="{{ url_for('analysis.upload') }}" class="btn btn-secondary">Upload More Data</a>
+    </div>
+</div>
+{% endblock %}

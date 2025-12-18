@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card">
+    <h2>Upload Subject Choice Data</h2>
+    
+    <form method="POST" enctype="multipart/form-data" style="margin-top: 1.5rem;">
+        <div style="margin-bottom: 1.5rem;">
+            <label for="year_group" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">
+                Year Group:
+            </label>
+            <select name="year_group" id="year_group" required 
+                    style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 4px; font-size: 1rem;">
+                <option value="">Select Year Group</option>
+                <option value="S3">S3</option>
+                <option value="S4">S4</option>
+                <option value="S5-6">S5-6</option>
+            </select>
+        </div>
+        
+        <div style="margin-bottom: 1.5rem;">
+            <label for="file" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">
+                Data File (CSV or Excel):
+            </label>
+            <input type="file" name="file" id="file" accept=".csv,.xlsx,.xls" required
+                   style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 4px;">
+        </div>
+        
+        <div style="background-color: #f8f9fa; padding: 1rem; border-radius: 4px; margin-bottom: 1.5rem;">
+            <h4 style="margin-bottom: 0.5rem;">File Format Requirements:</h4>
+            <ul style="margin-left: 1.5rem; color: #555;">
+                <li>CSV or Excel format (.csv, .xlsx, .xls)</li>
+                <li>Should contain student subject choice data</li>
+                <li>Column headers should include subject names or be labeled as "Subject1", "Subject2", etc.</li>
+                <li>Each row represents a student's choices</li>
+            </ul>
+        </div>
+        
+        <button type="submit" class="btn">Upload and Process</button>
+        <a href="{{ url_for('main.dashboard') }}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}
